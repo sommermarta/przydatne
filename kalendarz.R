@@ -3,12 +3,15 @@ library("dplyr")
 
 kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
     
-    rok <- substr(od, 1, 4) %>% as.numeric()
+    if(zaznacz_od>zaznacz_do) stop("Data początkowa jest większa od końcowej!")
+    
+    rok1 <- substr(zaznacz_od, 1, 4) %>% as.numeric()
+    rok2 <- substr(zaznacz_do, 1, 4) %>% as.numeric()
     
     seq(as.Date(zaznacz_od), as.Date(zaznacz_do), by=1) -> ktore
     
-    seq(as.Date(paste(rok, "-01-01", sep="")), 
-        as.Date(paste(rok, "-12-31", sep="")), 
+    seq(as.Date(paste(rok1, "-01-01", sep="")), 
+        as.Date(paste(rok2, "-12-31", sep="")), 
         by=1) -> data
     
     as.POSIXlt(data)$wday -> dzien_tyg
@@ -18,17 +21,18 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
         "+"(1) -> nr_tyg
     
     data.frame(data, dzien_tyg, nr_tyg) %>% 
-        mutate(ktore=ifelse(data %in% ktore, "1", "0"),
+        mutate(ktore=ifelse(data %in% ktore & dzien_tyg %in% 6:7, "w1", 
+                            ifelse(data %in% ktore & dzien_tyg %in% 1:5, "p1",
+                            ifelse(!(data %in% ktore) & dzien_tyg %in% 6:7, "w0", "p0"))),
                miesiac=as.POSIXlt(data)$mon+1,
-               rok=rok) %>%
-        mutate(rok_polowa=ifelse(miesiac<=6, 1, 2)) %>% 
-        group_by(miesiac) %>% 
+               rok=as.numeric(strftime(data, format="%Y"))) %>%
+        group_by(rok, miesiac) %>% 
         mutate(min_tyg=min(nr_tyg)) %>% 
         mutate(nr_tyg2=nr_tyg-min_tyg+1,
                dzien=as.numeric(strftime(data, format="%d"))) -> ramka
     
     ramka$dzien_tyg <- factor(ramka$dzien_tyg, levels=1:7,
-                              labels=c("pon.","wt.","śr.","czw.","pt.","sob.","niedz."),
+                              labels=c("PN","WT","ŚR","CZ","PT","SOB","NIE"),
                               ordered=TRUE)
     ramka$miesiac <- factor(ramka$miesiac,
                             levels=as.character(1:12),
@@ -45,12 +49,26 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
         geom_tile(colour="white")+
         geom_text(aes(label=dzien))+
         facet_grid(rok~miesiac)+
+#         geom_rect(aes(xmin = 5.5, xmax = 7.5, ymin = -Inf, ymax = Inf),
+#                   fill = "pink", alpha = 0.03)+
+#         geom_tile(colour="white")+
+#         geom_text(aes(label=dzien))+
+#         facet_grid(rok~miesiac)+
         theme_bw()+
         theme(axis.title = element_blank(),
-              axis.ticks.y = element_blank(), 
+              axis.ticks = element_blank(), 
               axis.text.y = element_blank(),
-              axis.text.x = element_text(angle=90),
-              legend.position="none")+
-        scale_fill_manual(values=c("gray89", "skyblue1"))
+              axis.text.x = element_blank(),
+              legend.position="none",
+              panel.grid.major=element_blank(),
+              panel.grid.minor=element_blank())+
+        scale_fill_manual(values=c("gray89", "skyblue1", "gray78", "steelblue1"))
 }
     
+# # przyklady:
+# 
+# kalendarz("2016-02-09", "2016-03-10")
+# kalendarz(zaznacz_od="2016-02-09", zaznacz_do="2018-03-10")
+# kalendarz("2016-04-09", "2016-03-10")
+
+
