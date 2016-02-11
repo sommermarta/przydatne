@@ -45,6 +45,11 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
     
     if(filtr=="") ramka2 <- ramka else ramka2 <- ramka %>% filter_(filtr)
     
+    kolory <- c("gray89", "skyblue1", "gray78", "steelblue1")
+    wart <- c("p0", "p1", "w0", "w1")
+    
+    kolory[wart %in% unique(ramka2$ktore)] -> kol
+    
     ggplot(ramka2, aes(x=dzien_tyg, y=nr_tyg2, fill=ktore))+ 
         geom_tile(colour="white")+
         geom_text(aes(label=dzien))+
@@ -62,13 +67,13 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
               legend.position="none",
               panel.grid.major=element_blank(),
               panel.grid.minor=element_blank())+
-        scale_fill_manual(values=c("gray89", "skyblue1", "gray78", "steelblue1"))
+        scale_fill_manual(values=kol)
 }
     
-# # przyklady:
-# 
-# kalendarz("2016-02-09", "2016-03-10")
-# kalendarz(zaznacz_od="2016-02-09", zaznacz_do="2018-03-10")
-# kalendarz("2016-04-09", "2016-03-10")
+# przyklady:
 
-
+kalendarz("2016-02-09", "2016-03-10")
+kalendarz(zaznacz_od="2016-02-09", zaznacz_do="2018-03-10")
+kalendarz("2016-04-09", "2016-03-10")
+kalendarz("2016-04-09", "2016-04-09")
+kalendarz("2016-01-01", "2021-12-03")
