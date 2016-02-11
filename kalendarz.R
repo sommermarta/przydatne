@@ -1,7 +1,7 @@
 library("ggplot2")
 library("dplyr")
 
-kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
+kalendarz <- function(zaznacz_od, zaznacz_do, filtr="", pelne_nazwy_miesiecy=FALSE){
     
     if(zaznacz_od>zaznacz_do) stop("Data początkowa jest większa od końcowej!")
     
@@ -34,11 +34,24 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
     ramka$dzien_tyg <- factor(ramka$dzien_tyg, levels=1:7,
                               labels=c("PN","WT","ŚR","CZ","PT","SOB","NIE"),
                               ordered=TRUE)
-    ramka$miesiac <- factor(ramka$miesiac,
-                            levels=as.character(1:12),
-                            labels=c("Sty","Luty","Mar","Kw","Maj","Cze",
-                                     "Lip","Sie","Wrz","Paź","Lis","Gru"),
-                            ordered=TRUE)
+    
+    if(pelne_nazwy_miesiecy==FALSE){
+        ramka$miesiac2 <- factor(ramka$miesiac,
+                                 levels=as.character(1:12),
+                                 labels=c("Sty","Luty","Mar","Kw","Maj","Cze",
+                                         "Lip","Sie","Wrz","Paź","Lis","Gru"),
+                                 ordered=TRUE)  
+    } else{
+        ramka$miesiac2 <- factor(ramka$miesiac,
+                                 levels=as.character(1:12),
+                                 labels=c("Styczeń","Luty","Marzec",
+                                          "Kwiecień","Maj","Czerwiec",
+                                          "Lipiec","Sierpień","Wrzesień",
+                                          "Październik","Listopad","Grudzień"),
+                                 ordered=TRUE)
+    }
+    
+    
     ramka$nr_tyg2 <- factor(ramka$nr_tyg2, levels=rev(1:max(ramka$nr_tyg2)),
                             labels=rev(as.character(1:max(ramka$nr_tyg2))),
                             ordered=TRUE)
@@ -53,7 +66,7 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
     ggplot(ramka2, aes(x=dzien_tyg, y=nr_tyg2, fill=ktore))+ 
         geom_tile(colour="white")+
         geom_text(aes(label=dzien))+
-        facet_grid(rok~miesiac)+
+        facet_grid(rok~miesiac2)+
 #         geom_rect(aes(xmin = 5.5, xmax = 7.5, ymin = -Inf, ymax = Inf),
 #                   fill = "pink", alpha = 0.03)+
 #         geom_tile(colour="white")+
@@ -70,10 +83,10 @@ kalendarz <- function(zaznacz_od, zaznacz_do, filtr=""){
         scale_fill_manual(values=kol)
 }
     
-# przyklady:
-
-kalendarz("2016-02-09", "2016-03-10")
-kalendarz(zaznacz_od="2016-02-09", zaznacz_do="2018-03-10")
-kalendarz("2016-04-09", "2016-03-10")
-kalendarz("2016-04-09", "2016-04-09")
-kalendarz("2016-01-01", "2021-12-03")
+# # przyklady:
+# 
+# kalendarz("2016-02-09", "2016-03-10")
+# kalendarz(zaznacz_od="2016-02-09", zaznacz_do="2018-03-10")
+# kalendarz("2016-04-09", "2016-03-10")
+# kalendarz("2016-04-09", "2016-04-09")
+# kalendarz("2016-01-01", "2021-12-03")
